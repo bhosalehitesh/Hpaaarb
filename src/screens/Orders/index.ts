@@ -1,1 +1,3 @@
-export {default as OrdersScreen} from './OrdersScreen';
+export { default } from './my-orders';
+
+
