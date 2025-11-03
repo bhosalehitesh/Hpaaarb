@@ -123,7 +123,30 @@ dependencies {
     }
 }
 
-apply from: file("../../node_modules/react-native/node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 // React Native Vector Icons
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
+// Make installDebug optional - don't fail build if no device is connected
+tasks.whenTaskAdded { task ->
+    if (task.name == "installDebug") {
+        task.onlyIf {
+            try {
+                def proc = "adb devices".execute()
+                proc.waitFor()
+                def output = proc.text
+                if (!output.contains("\tdevice")) {
+                    println "⚠️  WARNING: No online Android device found. Skipping installation."
+                    println "✅ Build succeeded - APK available at: ${project.buildDir}/outputs/apk/debug/app-debug.apk"
+                    return false // Skip this task
+                }
+                return true // Run the task
+            } catch (Exception e) {
+                println "⚠️  WARNING: Could not check for devices. Skipping installation."
+                println "✅ Build succeeded - APK available at: ${project.buildDir}/outputs/apk/debug/app-debug.apk"
+                return false // Skip this task
+            }
+        }
+    }
+}
