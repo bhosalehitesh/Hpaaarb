@@ -297,7 +297,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onAuthenticated, onSwitchTo
 
       {onSwitchToSignIn && (
         <View style={styles.switchContainer}>
-          <Text style={styles.switchText}>Already signed up? </Text>
+          <Text style={styles.switchText}>Already have an account? </Text>
           <TouchableOpacity onPress={onSwitchToSignIn} activeOpacity={0.7}>
             <Text style={styles.switchLink}>Sign in</Text>
           </TouchableOpacity>

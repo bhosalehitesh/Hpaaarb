@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  TouchableOpacity,
 } from 'react-native';
 import SignUpScreen from './SignUpScreen';
 import SignInScreen from './SignInScreen';
@@ -49,36 +48,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
 
           {/* Main Card */}
           <View style={styles.card}>
-            {/* Radio Button Options */}
-            <View style={styles.radioContainer}>
-              <TouchableOpacity
-                style={styles.radioOption}
-                onPress={() => setAuthMode('signup')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.radioButton}>
-                  {authMode === 'signup' && <View style={styles.radioButtonSelected} />}
-                </View>
-                <View style={styles.radioTextContainer}>
-                  <Text style={styles.radioText}>Create new Amazon account</Text>
-                  <Text style={styles.radioSubtext}>New to Amazon?</Text>
-                </View>
-              </TouchableOpacity>
-
-              <View style={styles.divider} />
-
-              <TouchableOpacity
-                style={styles.radioOption}
-                onPress={() => setAuthMode('signin')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.radioButton}>
-                  {authMode === 'signin' && <View style={styles.radioButtonSelected} />}
-                </View>
-                <Text style={styles.radioText}>Sign in with your Amazon account</Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Render Sign Up or Sign In */}
             {authMode === 'signup' ? (
               <SignUpScreen 
@@ -161,51 +130,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-  },
-  radioContainer: {
-    marginBottom: 20,
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#007185',
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioButtonSelected: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#007185',
-  },
-  radioTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  radioText: {
-    fontSize: 16,
-    color: '#1a1a1a',
-    fontWeight: '400',
-  },
-  radioSubtext: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginLeft: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#e5e7eb',
-    marginVertical: 8,
-    marginLeft: 32,
   },
   copyright: {
     fontSize: 11,
