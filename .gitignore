@@ -1,9 +1,84 @@
-# Dependencies
+# OSX
+#
+.DS_Store
+
+# Xcode
+#
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+
+# Android/IntelliJ
+#
+build/
+.idea
+.idea/
+.vscode/
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+*.keystore
+!debug.keystore
+**/android/app/build/
+**/android/build/
+**/android/.gradle/
+**/android/app/release/
+*.apk
+*.aab
+
+# node.js
+#
 node_modules/
 **/node_modules/
+npm-debug.log
+npm-debug.log*
+yarn-error.log
+yarn-debug.log*
+yarn-error.log*
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# Bundle artifact
+*.jsbundle
+
+# Ruby / CocoaPods
+/ios/Pods/
+/vendor/bundle/
+.bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+.metro-health-check*
+
+# testing
+/coverage
 
 # Build outputs
-build/
 dist/
 *.log
 
@@ -13,35 +88,18 @@ dist/
 .env.*.local
 
 # IDE
-.idea/
-.vscode/
 *.swp
 *.swo
 *~
 
 # OS
-.DS_Store
 Thumbs.db
-
-# Android
-**/android/app/build/
-**/android/build/
-**/android/.gradle/
-**/android/app/release/
-*.apk
-*.aab
 
 # React Native
 .expo/
 .expo-shared/
 
 # Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Debug files
 hs_err_pid*.log
 replay_pid*.log
 
@@ -65,4 +123,3 @@ target/
 *.db
 *.sqlite
 *.sqlite3
-
