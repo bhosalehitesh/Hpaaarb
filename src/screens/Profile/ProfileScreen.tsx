@@ -9,6 +9,7 @@ import {
   Switch
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuth } from '../../authentication/AuthContext';
 
 import LegalScreen from './Profile-tabs/LegalScreen';
 import StoreConfigScreen from './Profile-tabs/StoreConfigScreen';
@@ -61,6 +62,15 @@ const ProfileScreen = () => {
   const [pickup, setPickup] = useState(true);
   const [delivery, setDelivery] = useState(true);
   const [subPage, setSubPage] = useState<SubPage>(null);
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   // --- SUB SCREEN CONDITIONAL RENDER ---
   if (subPage === 'legal') return <LegalScreen onBack={() => setSubPage(null)} />;
@@ -253,10 +263,10 @@ const ProfileScreen = () => {
           <MaterialCommunityIcons name="share-variant" size={20} color="#1E3A8A" />
           <Text style={styles.shareText}>Share Store</Text>
           </TouchableOpacity>
-        <TouchableOpacity style={styles.logoutBtn}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={20} color="#d73a33" />
           <Text style={styles.logoutText}>Log Out</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

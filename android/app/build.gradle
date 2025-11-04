@@ -109,6 +109,8 @@ dependencies {
     // Required by react-native-image-picker (Photo Picker APIs)
     // Keep activity-ktx on a version compatible with AGP/Kotlin to avoid Photo Picker API conflicts
     implementation("androidx.activity:activity-ktx:1.6.1")
+    // Manually add react-native-view-shot dependency
+    implementation project(':react-native-view-shot')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
@@ -123,7 +125,17 @@ dependencies {
     }
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+// React Native 0.72+ autolinking is handled by the Gradle Plugin
+// Try to apply native_modules.gradle if it exists
+try {
+    def nativeModulesFile = file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+    if (nativeModulesFile.exists()) {
+        apply from: nativeModulesFile
+        applyNativeModulesAppBuildGradle(project)
+    }
+} catch (Exception e) {
+    // Autolinking will handle native modules through the React Native Gradle Plugin
+}
 
 // React Native Vector Icons
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")

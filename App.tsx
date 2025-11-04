@@ -9,7 +9,12 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import { AuthProvider, useAuth } from './src/authentication/AuthContext';
+import AuthScreen from './src/authentication/AuthScreen';
+import { storage, AUTH_TOKEN_KEY } from './src/authentication/storage';
+import OnboardingFlow from './src/authentication/onboarding/OnboardingFlow';
 
 // Import screens from organized folders
 import HomeScreen from './src/screens/Home/HomeScreen';
@@ -183,7 +188,132 @@ function TabNavigator() {
   );
 }
 
-function App(): JSX.Element {
+// Wrapper component that handles authentication state
+function AppContent() {
+  const [renderKey, setRenderKey] = React.useState(0);
+  const { isAuthenticated, isLoading, login } = useAuth();
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = React.useState(true);
+  const [isOnboardingComplete, setIsOnboardingComplete] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [initialLoadTimeout, setInitialLoadTimeout] = React.useState(false);
+  const [debugInfo, setDebugInfo] = React.useState<string>('');
+
+  // Debug logging
+  React.useEffect(() => {
+    const info = `Auth: ${isAuthenticated}, Loading: ${isLoading}, Checking: ${isCheckingOnboarding}, Complete: ${isOnboardingComplete}`;
+    setDebugInfo(info);
+    console.log('App State:', info);
+  }, [isAuthenticated, isLoading, isCheckingOnboarding, isOnboardingComplete]);
+
+  // Add timeout to prevent infinite loading - reduced to 3 seconds
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading || isCheckingOnboarding) {
+        console.warn('App loading timeout - forcing render');
+        setInitialLoadTimeout(true);
+        setIsCheckingOnboarding(false);
+      }
+    }, 3000); // 3 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isLoading, isCheckingOnboarding]);
+
+  React.useEffect(() => {
+    checkOnboardingStatus();
+  }, [isAuthenticated]);
+
+  const checkOnboardingStatus = async () => {
+    if (!isAuthenticated) {
+      setIsCheckingOnboarding(false);
+      setIsOnboardingComplete(false);
+      return;
+    }
+    try {
+      const onboardingCompleted = await storage.getItem('onboardingCompleted');
+      setIsOnboardingComplete(onboardingCompleted === 'true');
+      setError(null);
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      setError('Failed to check onboarding status');
+      setIsOnboardingComplete(false);
+    } finally {
+      setIsCheckingOnboarding(false);
+    }
+  };
+
+  const handleAuthenticated = async () => {
+    try {
+      // Token is already saved by SignInScreen/SignUpScreen
+      // Just trigger auth state update by checking storage
+      const token = await storage.getItem(AUTH_TOKEN_KEY);
+      if (token) {
+        await login(token);
+      } else {
+        console.error('No token found after authentication');
+        setError('Authentication failed - no token found');
+      }
+    } catch (error) {
+      console.error('Error during authentication:', error);
+      setError('Authentication failed');
+    }
+  };
+
+  const handleOnboardingComplete = async () => {
+    try {
+      // Ensure onboarding is marked as complete in storage
+      await storage.setItem('onboardingCompleted', 'true');
+      setIsOnboardingComplete(true);
+      setError(null);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setError('Failed to complete onboarding');
+    }
+  };
+
+  // Show error if any
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: 'red', marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setError(null);
+            checkOnboardingStatus();
+          }}
+          style={{ padding: 10, backgroundColor: '#007185', borderRadius: 8 }}
+        >
+          <Text style={{ color: 'white' }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Force render if timeout reached
+  if (initialLoadTimeout && (isLoading || isCheckingOnboarding)) {
+    console.warn('Timeout reached - showing auth screen');
+    return <AuthScreen onAuthenticated={handleAuthenticated} />;
+  }
+
+  if (isLoading || (isAuthenticated && isCheckingOnboarding)) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#17aba5" />
+        <Text style={{ marginTop: 16, color: '#666' }}>Loading...</Text>
+        {__DEV__ && (
+          <Text style={{ marginTop: 8, color: '#999', fontSize: 12 }}>{debugInfo}</Text>
+        )}
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen onAuthenticated={handleAuthenticated} />;
+  }
+
+  if (!isOnboardingComplete) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
   return (
     <NavigationContainer>
       <MainStack />
@@ -191,10 +321,92 @@ function App(): JSX.Element {
   );
 }
 
+function App(): JSX.Element {
+  // TEMPORARY: Minimal test to verify React Native is working
+  // Set to false after confirming React Native renders
+  const TEST_MODE = false; // Disabled - React Native is working
+
+  if (TEST_MODE) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f2f4f7' }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000', marginBottom: 20 }}>React Native Works!</Text>
+        <Text style={{ fontSize: 16, color: '#666' }}>If you see this, React Native is rendering correctly.</Text>
+        <Text style={{ fontSize: 14, color: '#999', marginTop: 10 }}>Set TEST_MODE to false to continue.</Text>
+      </View>
+    );
+  }
+
+  const [hasError, setHasError] = React.useState(false);
+  const [errorInfo, setErrorInfo] = React.useState<string>('');
+
+  // Wrap in error boundary
+  React.useEffect(() => {
+    const errorHandler = (error: Error) => {
+      console.error('App Error:', error);
+      setHasError(true);
+      setErrorInfo(error.message || 'Unknown error');
+    };
+
+    const originalError = console.error;
+    console.error = (...args) => {
+      originalError(...args);
+      if (args[0] instanceof Error) {
+        errorHandler(args[0]);
+      }
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
+
+  // Show error screen if something crashed
+  if (hasError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#000' }}>App Error</Text>
+        <Text style={{ color: 'red', marginBottom: 20, textAlign: 'center' }}>{errorInfo}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setHasError(false);
+            setErrorInfo('');
+          }}
+          style={{ padding: 10, backgroundColor: '#007185', borderRadius: 8 }}
+        >
+          <Text style={{ color: 'white' }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  try {
+    return (
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    );
+  } catch (error: any) {
+    console.error('App initialization error:', error);
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#000' }}>Initialization Error</Text>
+        <Text style={{ color: 'red', marginBottom: 20, textAlign: 'center' }}>{error?.message || String(error)}</Text>
+        <Text style={{ color: '#666', fontSize: 12, marginTop: 10 }}>Check Metro logs for details</Text>
+      </View>
+    );
+  }
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
   mainContent: {
     flex: 1,

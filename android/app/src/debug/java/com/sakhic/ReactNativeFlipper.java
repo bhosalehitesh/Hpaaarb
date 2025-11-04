@@ -18,6 +18,8 @@ import com.facebook.flipper.plugins.inspector.InspectorFlipperPlugin;
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor;
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin;
 import com.facebook.flipper.plugins.sharedpreferences.SharedPreferencesFlipperPlugin;
+import com.facebook.imagepipeline.core.ImagePipelineFactory;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.react.ReactInstanceEventListener;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
@@ -62,13 +64,33 @@ public class ReactNativeFlipper {
                     new Runnable() {
                       @Override
                       public void run() {
-                        client.addPlugin(new FrescoFlipperPlugin());
+                        // Initialize Fresco if not already initialized
+                        try {
+                          if (!Fresco.hasBeenInitialized()) {
+                            Fresco.initialize(context);
+                          }
+                          if (ImagePipelineFactory.getInstance() != null) {
+                            client.addPlugin(new FrescoFlipperPlugin());
+                          }
+                        } catch (Exception e) {
+                          // Fresco not available or not initialized, skip FrescoFlipperPlugin
+                        }
                       }
                     });
               }
             });
       } else {
-        client.addPlugin(new FrescoFlipperPlugin());
+        // Initialize Fresco if not already initialized
+        try {
+          if (!Fresco.hasBeenInitialized()) {
+            Fresco.initialize(context);
+          }
+          if (ImagePipelineFactory.getInstance() != null) {
+            client.addPlugin(new FrescoFlipperPlugin());
+          }
+        } catch (Exception e) {
+          // Fresco not available or not initialized, skip FrescoFlipperPlugin
+        }
       }
     }
   }

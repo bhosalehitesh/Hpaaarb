@@ -1,5 +1,6 @@
 package com.sakhic;
 
+import android.os.Bundle;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
@@ -28,5 +29,14 @@ public class MainActivity extends ReactActivity {
         getMainComponentName(),
         // If you opted-in for the New Architecture, we enable the Fabric Renderer.
         DefaultNewArchitectureEntryPoint.getFabricEnabled());
+  }
+
+  /**
+   * Fix for react-native-screens: Prevent fragment state restoration
+   * https://github.com/software-mansion/react-native-screens/issues/17
+   */
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(null); // Pass null to prevent fragment restoration
   }
 }
