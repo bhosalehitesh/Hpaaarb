@@ -145,7 +145,7 @@ export default function HelpCenterScreen({ onBack }: { onBack: () => void }) {
             <MaterialCommunityIcons name="store" size={32} color="#fff" />
           </View>
           <View style={styles.logoText}>
-            <Text style={styles.logoMain}>smartbiz</Text>
+            <Text style={styles.logoMain}>Sakhi</Text>
             <Text style={styles.logoSub}>by amazon</Text>
           </View>
         </View>
@@ -176,7 +176,7 @@ export default function HelpCenterScreen({ onBack }: { onBack: () => void }) {
 
         {/* Breadcrumbs */}
         <View style={styles.breadcrumbs}>
-          <Text style={styles.breadcrumbText}>Smartbiz by Amazon</Text>
+          <Text style={styles.breadcrumbText}>Sakhi</Text>
           <Text style={styles.breadcrumbSeparator}> / </Text>
           <Text style={styles.breadcrumbText}>FAQs</Text>
           <Text style={styles.breadcrumbSeparator}> / </Text>

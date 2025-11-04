@@ -39,7 +39,7 @@ const categories: Category[] = [
         id: 'a1',
         title: 'Account Set-Up',
         description: 'Learn how to create and set up your account',
-        content: 'Step-by-step guide to setting up your Smartbiz account...',
+        content: 'Step-by-step guide to setting up your Sakhi account...',
         category: 'getting-started',
       },
       {
@@ -99,7 +99,7 @@ const categories: Category[] = [
         title: 'Create Marketing Campaigns',
         description: 'Set up marketing campaigns to send promotional messages',
         content:
-          'On Smartbiz, you can set up marketing campaigns to send promotional messages to your customers via WhatsApp. You can use these campaigns to announce sales, new products, or special offers...',
+          'On Sakhi, you can set up marketing campaigns to send promotional messages to your customers via WhatsApp. You can use these campaigns to announce sales, new products, or special offers...',
         category: 'promoting-brand',
       },
       {
@@ -156,9 +156,9 @@ const featuredArticles: Article[] = [
     id: 'f2',
     title: 'Create Marketing Campaigns',
     description:
-      'On Smartbiz, you can set up marketing campaigns to send promotional messages to your customers via Whatsapp. You can use these campaigns...',
+      'On Sakhi, you can set up marketing campaigns to send promotional messages to your customers via Whatsapp. You can use these campaigns...',
     content:
-      'On Smartbiz, you can set up marketing campaigns to send promotional messages to your customers via WhatsApp. You can use these campaigns to announce sales, new products, or special offers.',
+      'On Sakhi, you can set up marketing campaigns to send promotional messages to your customers via WhatsApp. You can use these campaigns to announce sales, new products, or special offers.',
     category: 'featured',
   },
 ];
@@ -192,7 +192,7 @@ export default function HowToScreen({ onBack }: { onBack: () => void }) {
     if (type === 'support') {
       Alert.alert(
         'Need Help?',
-        'Raise a support request from your SmartBiz mobile app. Open app, visit profile settings page. Click on help.'
+        'Raise a support request from your Sakhi mobile app. Open app, visit profile settings page. Click on help.'
       );
     } else if (type === 'instagram') {
       Linking.openURL('https://www.instagram.com').catch(() => {
@@ -255,7 +255,7 @@ export default function HowToScreen({ onBack }: { onBack: () => void }) {
               <MaterialCommunityIcons name="store" size={32} color="#fff" />
             </View>
             <View style={styles.logoText}>
-              <Text style={styles.logoMain}>smartbiz</Text>
+              <Text style={styles.logoMain}>Sakhi</Text>
               <Text style={styles.logoSub}>by amazon</Text>
             </View>
           </View>
@@ -305,7 +305,7 @@ export default function HowToScreen({ onBack }: { onBack: () => void }) {
             <MaterialCommunityIcons name="store" size={32} color="#fff" />
           </View>
           <View style={styles.logoText}>
-            <Text style={styles.logoMain}>smartbiz</Text>
+            <Text style={styles.logoMain}>Sakhi</Text>
             <Text style={styles.logoSub}>by amazon</Text>
           </View>
         </View>
@@ -419,7 +419,7 @@ export default function HowToScreen({ onBack }: { onBack: () => void }) {
           <View style={styles.supportCardContent}>
             <Text style={styles.supportCardTitle}>Need help?</Text>
             <Text style={styles.supportCardText}>
-              Raise a support request from your SmartBiz mobile app. Open app, visit profile
+              Raise a support request from your Sakhi mobile app. Open app, visit profile
               settings page. Click on help.
             </Text>
           </View>

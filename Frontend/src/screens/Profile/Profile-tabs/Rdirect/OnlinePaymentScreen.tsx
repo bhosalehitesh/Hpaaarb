@@ -117,7 +117,7 @@ export default function OnlinePaymentScreen({ onBack }: OnlinePaymentScreenProps
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
               Your Razorpay account will be created with the email and phone number provided to
-              Smartbiz. This cannot be changed.
+              Sakhi. This cannot be changed.
             </Text>
           </View>
 

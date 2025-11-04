@@ -243,12 +243,7 @@ const ProfileScreen = () => {
           </ScrollView>
         </View>
 
-        {/* App Info & Actions */}
-        <View style={styles.appSection}>
-          <Text style={styles.appName}>SmartBiz App</Text>
-          <Text style={styles.appInfo}>Build Number: 1.0.7662.0</Text>
-          <Text style={styles.appInfo}>© 2012-2023 Amazon.com, Inc or its affiliates</Text>
-        </View>
+        {/* App Actions */}
         <TouchableOpacity style={styles.shareBtn}>
           <MaterialCommunityIcons name="share-variant" size={20} color="#1E3A8A" />
           <Text style={styles.shareText}>Share Store</Text>

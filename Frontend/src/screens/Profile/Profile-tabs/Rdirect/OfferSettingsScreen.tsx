@@ -8,8 +8,10 @@ import {
   Alert,
   Modal,
   ScrollView,
+  Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface OfferSettingsScreenProps {
   offerData: any;
@@ -87,18 +89,46 @@ export default function OfferSettingsScreen({ offerData, onNext }: OfferSettings
     return `${day}/${month}/${year}`;
   };
 
+  const parseDate = (dateString: string): Date | null => {
+    if (!dateString || dateString === 'dd/mm/yyyy') return null;
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  };
+
   const handleDateConfirm = (date: Date, type: 'start' | 'end') => {
     if (type === 'start') {
       setStartDate(formatDate(date));
       setTempStartDate(date);
+      setShowStartDatePicker(false);
     } else {
       setEndDate(formatDate(date));
       setTempEndDate(date);
-    }
-    if (type === 'start') {
-      setShowStartDatePicker(false);
-    } else {
       setShowEndDatePicker(false);
+    }
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date, type: 'start' | 'end') => {
+    if (Platform.OS === 'android') {
+      if (type === 'start') {
+        setShowStartDatePicker(false);
+      } else {
+        setShowEndDatePicker(false);
+      }
+      if (event.type === 'set' && selectedDate) {
+        handleDateConfirm(selectedDate, type);
+      }
+    } else {
+      if (selectedDate) {
+        if (type === 'start') {
+          setTempStartDate(selectedDate);
+        } else {
+          setTempEndDate(selectedDate);
+        }
+      }
     }
   };
 
@@ -202,7 +232,13 @@ export default function OfferSettingsScreen({ offerData, onNext }: OfferSettings
 
           <TouchableOpacity
             style={styles.dateInput}
-            onPress={() => setShowStartDatePicker(true)}
+            onPress={() => {
+              const parsedDate = parseDate(startDate);
+              if (parsedDate) {
+                setTempStartDate(parsedDate);
+              }
+              setShowStartDatePicker(true);
+            }}
           >
             <Text style={styles.dateLabel}>Start Date *</Text>
             <View style={styles.dateValue}>
@@ -229,7 +265,18 @@ export default function OfferSettingsScreen({ offerData, onNext }: OfferSettings
             <>
               <TouchableOpacity
                 style={styles.dateInput}
-                onPress={() => setShowEndDatePicker(true)}
+                onPress={() => {
+                  const parsedDate = parseDate(endDate);
+                  if (parsedDate) {
+                    setTempEndDate(parsedDate);
+                  } else if (startDate) {
+                    const parsedStartDate = parseDate(startDate);
+                    if (parsedStartDate) {
+                      setTempEndDate(parsedStartDate);
+                    }
+                  }
+                  setShowEndDatePicker(true);
+                }}
               >
                 <Text style={styles.dateLabel}>End Date *</Text>
                 <View style={styles.dateValue}>
@@ -314,49 +361,88 @@ export default function OfferSettingsScreen({ offerData, onNext }: OfferSettings
       </View>
 
       {/* Date Picker Modals */}
-      <Modal visible={showStartDatePicker} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Start Date</Text>
-              <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
-                <MaterialCommunityIcons name="close" size={24} color="#222" />
-              </TouchableOpacity>
+      {Platform.OS === 'android' ? (
+        <>
+          {showStartDatePicker && (
+            <DateTimePicker
+              value={tempStartDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => handleDateChange(event, date, 'start')}
+              minimumDate={new Date()}
+            />
+          )}
+          {showEndDatePicker && (
+            <DateTimePicker
+              value={tempEndDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => handleDateChange(event, date, 'end')}
+              minimumDate={tempStartDate || new Date()}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Modal visible={showStartDatePicker} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Select Start Date</Text>
+                  <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
+                    <MaterialCommunityIcons name="close" size={24} color="#222" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={tempStartDate}
+                    mode="date"
+                    display="inline"
+                    onChange={(event, date) => handleDateChange(event, date, 'start')}
+                    minimumDate={new Date()}
+                    style={styles.datePicker}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => handleDateConfirm(tempStartDate, 'start')}
+                >
+                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <ScrollView>
-              <Text style={styles.datePickerText}>Use native date picker here</Text>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => handleDateConfirm(tempStartDate, 'start')}
-              >
-                <Text style={styles.confirmButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+          </Modal>
 
-      <Modal visible={showEndDatePicker} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select End Date</Text>
-              <TouchableOpacity onPress={() => setShowEndDatePicker(false)}>
-                <MaterialCommunityIcons name="close" size={24} color="#222" />
-              </TouchableOpacity>
+          <Modal visible={showEndDatePicker} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Select End Date</Text>
+                  <TouchableOpacity onPress={() => setShowEndDatePicker(false)}>
+                    <MaterialCommunityIcons name="close" size={24} color="#222" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={tempEndDate}
+                    mode="date"
+                    display="inline"
+                    onChange={(event, date) => handleDateChange(event, date, 'end')}
+                    minimumDate={tempStartDate || new Date()}
+                    style={styles.datePicker}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => handleDateConfirm(tempEndDate, 'end')}
+                >
+                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <ScrollView>
-              <Text style={styles.datePickerText}>Use native date picker here</Text>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => handleDateConfirm(tempEndDate, 'end')}
-              >
-                <Text style={styles.confirmButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+          </Modal>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -567,6 +653,14 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     padding: 20,
+  },
+  datePickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  datePicker: {
+    width: '100%',
   },
   confirmButton: {
     backgroundColor: '#17aba5',

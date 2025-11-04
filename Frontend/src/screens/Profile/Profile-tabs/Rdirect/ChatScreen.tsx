@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const suggestedQuestions = [
-  "How can I set-up my Smartbiz account?",
+  "How can I set-up my Sakhi account?",
   "How can I list my products?",
   "Issues/Queries related to Shipping?",
   "How can I promote my brand?",
@@ -21,7 +21,7 @@ export default function ChatScreen({ onBack }: { onBack: () => void }) {
         <TouchableOpacity onPress={onBack}>
           <MaterialCommunityIcons name="arrow-left" size={28} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.title}>Smartbiz</Text>
+        <Text style={styles.title}>Sakhi</Text>
         <View style={{ width: 28 }} />
       </View>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.chatContainer}>
@@ -40,7 +40,7 @@ export default function ChatScreen({ onBack }: { onBack: () => void }) {
           </View>
           <View style={styles.botBubble}>
             <Text style={styles.botMessageText}>
-              Hi! This is SmartBiz bot. How can I help you today?
+              Hi! This is Sakhi bot. How can I help you today?
             </Text>
             <Text style={styles.messageTime}>14:31</Text>
           </View>
