@@ -20,6 +20,11 @@ interface SignInScreenProps {
 
 type SignInMethod = 'password' | 'otp';
 
+// Generate OTP utility function
+const generateOtp = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchToSignUp }) => {
   const auth = useAuth();
   const [mobileNumber, setMobileNumber] = useState('');
@@ -48,11 +53,23 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
       return;
     }
 
-    Alert.alert(
-      'Info',
-      'OTP login is not available yet. Please use password login. OTP login will be available soon.',
-      [{ text: 'OK' }]
-    );
+    // Check if account exists
+    const cleanMobile = mobileNumber.replace(/\D/g, '');
+    const existingPhone = await storage.getItem(AUTH_PHONE_KEY);
+    if (!existingPhone || existingPhone !== cleanMobile) {
+      Alert.alert(
+        'Account Not Found',
+        'No account found with this mobile number. Please sign up first.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    setLoading(true);
+    const code = generateOtp();
+    setOtpSent(code);
+    setLoading(false);
+    // Don't show alert - OTP is displayed on screen
   };
 
   const handleSignIn = async () => {
@@ -123,11 +140,25 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
       return;
     }
 
-    Alert.alert(
-      'Info',
-      'Password reset via OTP is not available yet. Please contact support or use the sign up flow.',
-      [{ text: 'OK' }]
-    );
+    // Check if account exists
+    const cleanMobile = mobileNumber.replace(/\D/g, '');
+    const existingPhone = await storage.getItem(AUTH_PHONE_KEY);
+    if (!existingPhone || existingPhone !== cleanMobile) {
+      Alert.alert(
+        'Account Not Found',
+        'No account found with this mobile number. Please sign up first.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    setLoading(true);
+    const code = generateOtp();
+    setOtpSent(code);
+    setSignInMethod('otp');
+    setPassword(''); // Clear password field
+    setLoading(false);
+    // OTP is displayed on screen, no alert needed
   };
 
   const handleTermsPress = () => {
@@ -139,7 +170,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
   };
 
   const handleSupportPress = () => {
-    Alert.alert('Support', 'Contact SmartBiz support for assistance.');
+    Alert.alert('Support', 'Contact SmartBiz Sakhi store support for assistance.');
   };
 
   return (
@@ -197,6 +228,26 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
         </>
       ) : (
         <>
+          {/* Demo OTP Display Box */}
+          {otpSent && (
+            <View style={styles.demoOtpContainer}>
+              <View style={styles.demoOtpBox}>
+                <Text style={styles.demoOtpLabel}>Demo OTP (for testing):</Text>
+                <Text style={styles.demoOtpCode}>{otpSent}</Text>
+                <TouchableOpacity
+                  style={styles.autoFillButton}
+                  onPress={() => {
+                    setOtp(otpSent);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <MaterialCommunityIcons name="content-copy" size={16} color="#ffffff" />
+                  <Text style={styles.autoFillText}>Auto Fill</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           <Text style={[styles.label, styles.labelMargin]}>Enter OTP</Text>
           <TextInput
             style={styles.input}
@@ -277,7 +328,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
       </TouchableOpacity>
 
       <Text style={styles.termsText}>
-        By continuing, you agree to SmartBiz's{' '}
+        By continuing, you agree to Sakhi's{' '}
         <Text style={styles.linkText} onPress={handleTermsPress}>
           Terms and conditions of use
         </Text>{' '}
@@ -294,7 +345,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onAuthenticated, onSwitchTo
         activeOpacity={0.7}
       >
         <Text style={styles.supportText}>
-          Facing issues? <Text style={styles.supportLink}>Contact SmartBiz support</Text>
+          Facing issues? <Text style={styles.supportLink}>Contact Sakhi support</Text>
         </Text>
       </TouchableOpacity>
 
@@ -410,8 +461,60 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#007185',
+    color: '#e61580',
     textDecorationLine: 'underline',
+  },
+  demoOtpContainer: {
+    marginBottom: 20,
+    marginTop: 8,
+  },
+  demoOtpBox: {
+    backgroundColor: '#fff5f9',
+    borderWidth: 2,
+    borderColor: '#e61580',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#e61580',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  demoOtpLabel: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginBottom: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  demoOtpCode: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#e61580',
+    letterSpacing: 8,
+    marginBottom: 16,
+    fontFamily: 'monospace',
+  },
+  autoFillButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e61580',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    gap: 8,
+    shadowColor: '#e61580',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  autoFillText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '600',
   },
   sendOtpButton: {
     alignSelf: 'flex-start',
@@ -421,7 +524,7 @@ const styles = StyleSheet.create({
   },
   sendOtpText: {
     fontSize: 14,
-    color: '#007185',
+    color: '#e61580',
     fontWeight: '500',
   },
   resendOtpButton: {
@@ -432,7 +535,7 @@ const styles = StyleSheet.create({
   },
   resendOtpText: {
     fontSize: 14,
-    color: '#007185',
+    color: '#e61580',
     textDecorationLine: 'underline',
   },
   methodToggle: {
@@ -448,7 +551,7 @@ const styles = StyleSheet.create({
   },
   methodOptionText: {
     fontSize: 14,
-    color: '#007185',
+    color: '#e61580',
     fontWeight: '500',
   },
   methodSeparator: {
@@ -456,13 +559,13 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   continueButton: {
-    backgroundColor: '#ff9900',
-    borderRadius: 24,
+    backgroundColor: '#e61580',
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 16,
-    shadowColor: '#ff9900',
+    shadowColor: '#e61580',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -484,7 +587,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   linkText: {
-    color: '#007185',
+    color: '#e61580',
     textDecorationLine: 'underline',
   },
   supportContainer: {
@@ -496,7 +599,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   supportLink: {
-    color: '#007185',
+    color: '#e61580',
     textDecorationLine: 'underline',
   },
   switchContainer: {
@@ -514,7 +617,7 @@ const styles = StyleSheet.create({
   },
   switchLink: {
     fontSize: 14,
-    color: '#007185',
+    color: '#e61580',
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
