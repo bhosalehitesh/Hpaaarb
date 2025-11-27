@@ -18,29 +18,27 @@ if (!fs.existsSync(targetDir)) {
 }
 
 // Create the native_modules.gradle file
-// This file is applied from Frontend/android/settings.gradle
-// From android/ directory, "../node_modules" points to Frontend/node_modules/
-// So we use the same relative path that settings.gradle uses
+// The simplest approach: use the same path that settings.gradle uses
+// settings.gradle is at Frontend/android/settings.gradle
+// It uses: file("../node_modules/...")
+// So from android/, "../node_modules" = Frontend/node_modules/
 const gradleContent = `def autoModules = {
-    // Get the root directory (where settings.gradle is located: Frontend/android/)
-    def rootDir = settings.rootDir
-    // From android/, go up one level to Frontend/, then into node_modules
-    def frontendDir = rootDir.parentFile
-    def nodeModulesDir = new File(frontendDir, "node_modules")
-    def reactNative = new File(nodeModulesDir, "react-native")
-    def reactNativePackageJson = new File(reactNative, "package.json")
+    // Use the same relative path as settings.gradle
+    // From Frontend/android/, "../node_modules/react-native" = Frontend/node_modules/react-native
+    def reactNativeDir = file("../../node_modules/react-native")
+    def reactNativePackageJson = new File(reactNativeDir, "package.json")
     
     if (!reactNativePackageJson.exists()) {
-        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Please ensure react-native is installed in node_modules.")
+        throw new GradleException("React Native not found at \${reactNativeDir.absolutePath}. Please run: npm install")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
     def reactNativeMinorVersion = reactNativeVersion.split("\\\\.")[1].toInteger()
 
     if (reactNativeMinorVersion >= 73) {
-        return new File(reactNative, "scripts/autolinking.gradle")
+        return new File(reactNativeDir, "scripts/autolinking.gradle")
     } else {
-        return new File(reactNative, "react.gradle")
+        return new File(reactNativeDir, "react.gradle")
     }
 }()
 
