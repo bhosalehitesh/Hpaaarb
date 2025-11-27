@@ -23,23 +23,26 @@ if (!fs.existsSync(targetDir)) {
 // It uses: file("../node_modules/...")
 // So from android/, "../node_modules" = Frontend/node_modules/
 const gradleContent = `def autoModules = {
-    // This file is applied from Frontend/android/settings.gradle
-    // Gradle resolves file() paths relative to the project root (Frontend/android/)
-    // From android/, "../node_modules/react-native" = Frontend/node_modules/react-native
-    def reactNativeDir = file("../node_modules/react-native")
-    def reactNativePackageJson = new File(reactNativeDir, "package.json")
+    // Get the directory where THIS gradle file is located
+    def gradleFile = new File(getClass().protectionDomain.codeSource.location.toURI())
+    def gradleFileDir = gradleFile.parentFile
+    // From: Frontend/node_modules/@react-native-community/cli-platform-android/
+    // Go up 2 levels to: Frontend/node_modules/
+    def nodeModulesDir = gradleFileDir.parentFile.parentFile
+    def reactNative = new File(nodeModulesDir, "react-native")
+    def reactNativePackageJson = new File(reactNative, "package.json")
     
     if (!reactNativePackageJson.exists()) {
-        throw new GradleException("React Native not found at \${reactNativeDir.absolutePath}. Please run: npm install")
+        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Expected: \${nodeModulesDir.absolutePath}/react-native")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
     def reactNativeMinorVersion = reactNativeVersion.split("\\\\.")[1].toInteger()
 
     if (reactNativeMinorVersion >= 73) {
-        return new File(reactNativeDir, "scripts/autolinking.gradle")
+        return new File(reactNative, "scripts/autolinking.gradle")
     } else {
-        return new File(reactNativeDir, "react.gradle")
+        return new File(reactNative, "react.gradle")
     }
 }()
 
