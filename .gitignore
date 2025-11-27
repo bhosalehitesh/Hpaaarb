@@ -124,3 +124,6 @@ target/
 *.db
 *.sqlite
 *.sqlite3
+
+# Backend configuration files (sensitive data)
+Backend/store/src/main/resources/application.properties
