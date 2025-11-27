@@ -19,14 +19,15 @@ if (!fs.existsSync(targetDir)) {
 
 // Create the native_modules.gradle file
 const gradleContent = `def autoModules = {
-    // From: Frontend/node_modules/@react-native-community/cli-platform-android/
-    // Go up 3 levels to Frontend/node_modules/, then find react-native
-    def nodeModulesDir = file("../../..")
+    // From: Frontend/node_modules/@react-native-community/cli-platform-android/native_modules.gradle
+    // Go up 4 levels to Frontend/, then into node_modules/react-native
+    def frontendDir = file("../../../../")
+    def nodeModulesDir = new File(frontendDir, "node_modules")
     def reactNative = new File(nodeModulesDir, "react-native")
     def reactNativePackageJson = new File(reactNative, "package.json")
     
     if (!reactNativePackageJson.exists()) {
-        throw new GradleException("React Native not found at \${reactNative.absolutePath}")
+        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Expected at: \${reactNative.absolutePath}")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
