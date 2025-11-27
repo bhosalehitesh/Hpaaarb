@@ -19,9 +19,15 @@ if (!fs.existsSync(targetDir)) {
 
 // Create the native_modules.gradle file
 const gradleContent = `def autoModules = {
-    def reactNativeRoot = file("../../")
-    def reactNative = file("\${reactNativeRoot}/node_modules/react-native")
+    // From: Frontend/node_modules/@react-native-community/cli-platform-android/
+    // Go up 3 levels to Frontend/, then to node_modules/react-native
+    def reactNative = file("../../../react-native")
     def reactNativePackageJson = file("\${reactNative}/package.json")
+    
+    if (!reactNativePackageJson.exists()) {
+        throw new GradleException("React Native not found at \${reactNative}")
+    }
+    
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
     def reactNativeMinorVersion = reactNativeVersion.split("\\\\.")[1].toInteger()
 
