@@ -20,21 +20,22 @@ if (!fs.existsSync(targetDir)) {
 // Create the native_modules.gradle file
 const gradleContent = `def autoModules = {
     // From: Frontend/node_modules/@react-native-community/cli-platform-android/
-    // Go up 3 levels to Frontend/, then to node_modules/react-native
-    def reactNative = file("../../../react-native")
-    def reactNativePackageJson = file("\${reactNative}/package.json")
+    // Go up 3 levels to Frontend/node_modules/, then find react-native
+    def nodeModulesDir = file("../../..")
+    def reactNative = new File(nodeModulesDir, "react-native")
+    def reactNativePackageJson = new File(reactNative, "package.json")
     
     if (!reactNativePackageJson.exists()) {
-        throw new GradleException("React Native not found at \${reactNative}")
+        throw new GradleException("React Native not found at \${reactNative.absolutePath}")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
     def reactNativeMinorVersion = reactNativeVersion.split("\\\\.")[1].toInteger()
 
     if (reactNativeMinorVersion >= 73) {
-        return file("\${reactNative}/scripts/autolinking.gradle")
+        return new File(reactNative, "scripts/autolinking.gradle")
     } else {
-        return file("\${reactNative}/react.gradle")
+        return new File(reactNative, "react.gradle")
     }
 }()
 
@@ -51,10 +52,7 @@ ext.applyNativeModulesSettingsGradle = this.&applyNativeModulesSettingsGradle
 ext.applyNativeModulesAppBuildGradle = this.&applyNativeModulesAppBuildGradle
 `;
 
-if (!fs.existsSync(targetFile)) {
-  fs.writeFileSync(targetFile, gradleContent);
-  console.log('Created native_modules.gradle file');
-} else {
-  console.log('native_modules.gradle already exists');
-}
+// Always overwrite to ensure we have the latest version
+fs.writeFileSync(targetFile, gradleContent);
+console.log('Created/updated native_modules.gradle file');
 
