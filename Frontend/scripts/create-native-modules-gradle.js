@@ -23,9 +23,12 @@ if (!fs.existsSync(targetDir)) {
 // It uses: file("../node_modules/...")
 // So from android/, "../node_modules" = Frontend/node_modules/
 const gradleContent = `def autoModules = {
-    // Use the same relative path as settings.gradle
-    // From Frontend/android/, "../node_modules/react-native" = Frontend/node_modules/react-native
-    def reactNativeDir = file("../../node_modules/react-native")
+    // Gradle file is at: Frontend/node_modules/@react-native-community/cli-platform-android/native_modules.gradle
+    // From there, go up 3 levels to reach Frontend/node_modules/, then find react-native
+    // ../ = cli-platform-android/
+    // ../../ = @react-native-community/
+    // ../../../ = node_modules/
+    def reactNativeDir = file("../../../react-native")
     def reactNativePackageJson = new File(reactNativeDir, "package.json")
     
     if (!reactNativePackageJson.exists()) {
