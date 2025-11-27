@@ -19,18 +19,29 @@ if (!fs.existsSync(targetDir)) {
 
 // Create the native_modules.gradle file
 // The gradle file is at: Frontend/node_modules/@react-native-community/cli-platform-android/native_modules.gradle
-// From there, go up 3 levels to Frontend/node_modules/, then find react-native
+// From there, we need to find react-native which is at: Frontend/node_modules/react-native
 const gradleContent = `def autoModules = {
-    // From the gradle file location, go up 3 levels to reach Frontend/node_modules/
-    // ../ = cli-platform-android/
-    // ../../ = @react-native-community/
-    // ../../../ = node_modules/
-    def nodeModulesDir = file("../../../")
+    // Get the directory where this script file is located
+    def scriptFile = new File(getClass().protectionDomain.codeSource.location.toURI())
+    def scriptDir = scriptFile.parentFile
+    // From: Frontend/node_modules/@react-native-community/cli-platform-android/
+    // Go up 2 levels to: Frontend/node_modules/
+    def nodeModulesDir = scriptDir.parentFile.parentFile
     def reactNative = new File(nodeModulesDir, "react-native")
     def reactNativePackageJson = new File(reactNative, "package.json")
     
+    // If not found, try using the settings.gradle location as reference
     if (!reactNativePackageJson.exists()) {
-        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Please ensure react-native is installed in node_modules.")
+        // Try alternative: use the project root from settings.gradle
+        def projectRoot = settings.rootDir
+        def altNodeModules = new File(projectRoot.parentFile, "node_modules")
+        def altReactNative = new File(altNodeModules, "react-native")
+        if (new File(altReactNative, "package.json").exists()) {
+            reactNative = altReactNative
+            reactNativePackageJson = new File(reactNative, "package.json")
+        } else {
+            throw new GradleException("React Native not found. Searched: \${reactNative.absolutePath} and \${altReactNative.absolutePath}")
+        }
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
