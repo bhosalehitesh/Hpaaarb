@@ -19,24 +19,18 @@ if (!fs.existsSync(targetDir)) {
 
 // Create the native_modules.gradle file
 // The gradle file is at: Frontend/node_modules/@react-native-community/cli-platform-android/native_modules.gradle
-// From there, we need to go up 3 levels to get to Frontend/node_modules/, then find react-native
+// From there, go up 3 levels to Frontend/node_modules/, then find react-native
 const gradleContent = `def autoModules = {
-    // Get the directory where this gradle file is located
-    def gradleFileDir = new File(getClass().protectionDomain.codeSource.location.toURI()).parentFile
-    // Go up 3 levels: cli-platform-android -> @react-native-community -> node_modules -> Frontend/node_modules/
-    def nodeModulesDir = gradleFileDir.parentFile.parentFile.parentFile
+    // From the gradle file location, go up 3 levels to reach Frontend/node_modules/
+    // ../ = cli-platform-android/
+    // ../../ = @react-native-community/
+    // ../../../ = node_modules/
+    def nodeModulesDir = file("../../../")
     def reactNative = new File(nodeModulesDir, "react-native")
     def reactNativePackageJson = new File(reactNative, "package.json")
     
     if (!reactNativePackageJson.exists()) {
-        // Fallback: try relative path from gradle file location
-        def fallbackReactNative = new File(gradleFileDir.parentFile.parentFile.parentFile, "react-native")
-        if (fallbackReactNative.exists()) {
-            reactNative = fallbackReactNative
-            reactNativePackageJson = new File(reactNative, "package.json")
-        } else {
-            throw new GradleException("React Native not found. Searched at: \${reactNative.absolutePath}")
-        }
+        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Please ensure react-native is installed in node_modules.")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
