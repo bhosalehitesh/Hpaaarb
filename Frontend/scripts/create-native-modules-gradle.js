@@ -18,30 +18,18 @@ if (!fs.existsSync(targetDir)) {
 }
 
 // Create the native_modules.gradle file
-// The gradle file is at: Frontend/node_modules/@react-native-community/cli-platform-android/native_modules.gradle
-// From there, we need to find react-native which is at: Frontend/node_modules/react-native
+// This file is applied from Frontend/android/settings.gradle
+// From android/ directory, "../node_modules" points to Frontend/node_modules/
+// So we use the same relative path that settings.gradle uses
 const gradleContent = `def autoModules = {
-    // Get the directory where this script file is located
-    def scriptFile = new File(getClass().protectionDomain.codeSource.location.toURI())
-    def scriptDir = scriptFile.parentFile
-    // From: Frontend/node_modules/@react-native-community/cli-platform-android/
-    // Go up 2 levels to: Frontend/node_modules/
-    def nodeModulesDir = scriptDir.parentFile.parentFile
-    def reactNative = new File(nodeModulesDir, "react-native")
+    // This gradle file is applied from Frontend/android/settings.gradle
+    // From android/ directory, "../node_modules" points to Frontend/node_modules/
+    // So we use the same relative path that settings.gradle uses
+    def reactNative = file("../node_modules/react-native")
     def reactNativePackageJson = new File(reactNative, "package.json")
     
-    // If not found, try using the settings.gradle location as reference
     if (!reactNativePackageJson.exists()) {
-        // Try alternative: use the project root from settings.gradle
-        def projectRoot = settings.rootDir
-        def altNodeModules = new File(projectRoot.parentFile, "node_modules")
-        def altReactNative = new File(altNodeModules, "react-native")
-        if (new File(altReactNative, "package.json").exists()) {
-            reactNative = altReactNative
-            reactNativePackageJson = new File(reactNative, "package.json")
-        } else {
-            throw new GradleException("React Native not found. Searched: \${reactNative.absolutePath} and \${altReactNative.absolutePath}")
-        }
+        throw new GradleException("React Native not found at \${reactNative.absolutePath}. Please ensure react-native is installed in node_modules.")
     }
     
     def reactNativeVersion = new groovy.json.JsonSlurper().parseText(reactNativePackageJson.text).version
@@ -70,4 +58,3 @@ ext.applyNativeModulesAppBuildGradle = this.&applyNativeModulesAppBuildGradle
 // Always overwrite to ensure we have the latest version
 fs.writeFileSync(targetFile, gradleContent);
 console.log('Created/updated native_modules.gradle file');
-
