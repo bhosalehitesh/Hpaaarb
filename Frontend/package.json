@@ -10,7 +10,8 @@
     "test": "jest",
     "setup-adb": "adb reverse tcp:8080 tcp:8080 && echo ADB reverse port forwarding set up successfully!",
     "check-adb": "adb devices",
-    "android-with-adb": "npm run setup-adb && react-native run-android"
+    "android-with-adb": "npm run setup-adb && react-native run-android",
+    "postinstall": "node -e \"const fs=require('fs');const path=require('path');const file=path.join(__dirname,'node_modules/@react-native-community/cli-platform-android/native_modules.gradle');if(!fs.existsSync(file)){const dir=path.dirname(file);if(!fs.existsSync(dir))fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(file,'def autoModules=file(\\\"../../react-native/react.gradle\\\");def applyNativeModulesSettingsGradle(settings){includeBuild(autoModules.parentFile.parentFile);apply from:autoModules};def applyNativeModulesAppBuildGradle(project){apply from:autoModules};ext.applyNativeModulesSettingsGradle=this.&applyNativeModulesSettingsGradle;ext.applyNativeModulesAppBuildGradle=this.&applyNativeModulesAppBuildGradle;');}\""
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
